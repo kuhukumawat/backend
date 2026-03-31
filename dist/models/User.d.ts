@@ -3,6 +3,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 }, {}, {}, {
@@ -11,6 +13,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 }, {
@@ -19,6 +23,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 } & {
@@ -31,12 +37,16 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 }, mongoose.Document<unknown, {}, {
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 }, {
@@ -45,6 +55,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 } & {
@@ -57,6 +69,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 } & {
@@ -67,6 +81,8 @@ declare const User: mongoose.Model<{
     name: string;
     email: string;
     password: string;
+    role: "user" | "admin";
+    profileImage: string;
     age?: number | null;
     gender?: string | null;
 } & {

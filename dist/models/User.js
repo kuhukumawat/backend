@@ -19,6 +19,15 @@ const userSchema = new mongoose_1.default.Schema({
     },
     age: Number,
     gender: String,
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
+    profileImage: {
+        type: String,
+        default: "",
+    },
 });
 const User = mongoose_1.default.model("User", userSchema);
 exports.default = User;

@@ -6,7 +6,10 @@ import {
   updateUserService,
 } from "../services/userService";
 import ApiError from "../utils/apiError";
-import { uploadToCloudinary } from "../utils/cloudinaryHelper";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinaryHelper";
 // exports.getAllUsers = (req, res) => {
 //      const users = [
 //     { id: 1, name: "Komal" },
@@ -82,12 +85,17 @@ export const deleteUser = async (req: Request, res: Response) => {
   const userId = req.body.id as string;
 
   if (!userId) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: "User ID is required",
     });
   }
 
   const userToDelete = await deleteUserService(userId);
+
+  if (userToDelete && userToDelete.profileImage) {
+    await deleteFromCloudinary(userToDelete.profileImage);
+  }
+
   res.send({ success: true, message: "User deleted", data: userToDelete });
 };

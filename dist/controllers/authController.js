@@ -3,88 +3,90 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginUser = exports.registerUser = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+exports.refreshTokenHandler = exports.forgortPassword = exports.loginUser = exports.registerUser = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
+const authService_1 = require("../services/authService");
+const apiError_1 = __importDefault(require("../utils/apiError"));
+const token_1 = require("../utils/token");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = __importDefault(require("../models/User"));
+dotenv_1.default.config();
 const registerUser = async (req, res) => {
-    try {
-        const { name, email, password, age, gender } = req.body;
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Name, email and password are required",
-            });
-        }
-        if (password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "Password must be at least 6 characters",
-            });
-        }
-        const existingUser = await User_1.default.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exists",
-            });
-        }
-        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
-        const user = new User_1.default({
-            name,
-            email,
-            password: hashedPassword,
-            age,
-            gender,
-        });
-        await user.save();
-        const token = jsonwebtoken_1.default.sign({ id: user._id }, "secretKey", { expiresIn: "48h" });
-        res.status(201).json({
-            success: true,
-            message: "User registered successfully",
-            data: user,
-            token: token,
-        });
-    }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(500).json({
-                success: false,
-                message: error.message,
-            });
-        }
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-        });
-    }
-};
-exports.registerUser = registerUser;
-const loginUser = async (req, res) => {
-    const { email, password } = new User_1.default(req.body);
-    if (!email || !password) {
+    const { name, email, password, age, gender } = req.body;
+    if (!name || !email || !password) {
         return res.status(400).json({
             success: false,
-            message: "Email or Password is wrong",
+            message: "Name, email and password are required",
         });
     }
-    const matchUser = await User_1.default.findOne({ email });
-    if (!matchUser) {
-        return res.json({ message: "User not found" });
-    }
-    const isMatch = await bcryptjs_1.default.compare(password, matchUser.password);
-    if (!isMatch) {
-        return res.json({ message: "Invalid password" });
-    }
-    const token = jsonwebtoken_1.default.sign({ id: matchUser._id }, "secretKey", {
-        expiresIn: "48h",
+    const user = await (0, authService_1.registerUserService)({
+        name,
+        email,
+        password,
+        age,
+        gender,
     });
-    res.json({
+    res.status(201).json({
         success: true,
-        message: "User Logged In",
-        data: { matchUser },
-        token: token,
+        message: "User registered successfully",
+        data: user,
+    });
+};
+exports.registerUser = registerUser;
+const loginUser = async (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return next(new apiError_1.default(400, "Email or Password is wrong"));
+    }
+    const user = await (0, authService_1.loginService)({ email, password });
+    res.send({
+        success: true,
+        message: "User logged in successfully",
+        data: user,
     });
 };
 exports.loginUser = loginUser;
+const forgortPassword = async (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return next(new apiError_1.default(400, "Email or Password is required"));
+    }
+    const user = await (0, authService_1.forgotPasswordService)({
+        email: email,
+        password: password,
+    });
+    res.send({
+        success: true,
+        message: "Password reset successfully",
+    });
+};
+exports.forgortPassword = forgortPassword;
+const refreshTokenHandler = async (req, res, next) => {
+    const token = req.body.token;
+    if (!token) {
+        return next(new apiError_1.default(401, "Refresh token not found"));
+    }
+    let decodedToken;
+    try {
+        decodedToken = jsonwebtoken_1.default.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    }
+    catch (err) {
+        return next(new apiError_1.default(401, "Invalid or expired refresh token"));
+    }
+    const user = await User_1.default.findById(decodedToken.userId);
+    if (!user) {
+        return next(new apiError_1.default(401, "User not found"));
+    }
+    const accessToken = (0, token_1.generateAccessToken)(user._id.toString());
+    const refreshToken = (0, token_1.generateRefreshToken)(user._id.toString());
+    res.send({
+        success: true,
+        message: "Refresh token generated successfully",
+        data: {
+            accessToken,
+            refreshToken,
+        },
+    });
+};
+exports.refreshTokenHandler = refreshTokenHandler;
 //# sourceMappingURL=authController.js.map

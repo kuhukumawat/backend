@@ -4,8 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.createUser = exports.getAllUsers = void 0;
-const User_1 = __importDefault(require("../models/User"));
 const userService_1 = require("../services/userService");
+const apiError_1 = __importDefault(require("../utils/apiError"));
+const cloudinaryHelper_1 = require("../utils/cloudinaryHelper");
 // exports.getAllUsers = (req, res) => {
 //      const users = [
 //     { id: 1, name: "Komal" },
@@ -24,39 +25,63 @@ const userService_1 = require("../services/userService");
 //   });
 // };
 const getAllUsers = async (req, res) => {
-    const users = await (0, userService_1.getUsersService)();
-    res.json({ success: true, data: { users: users } });
+    const { users, total, page, limit } = await (0, userService_1.getUsersService)(req.body);
+    res.json({
+        success: true,
+        data: {
+            users: users,
+            pagination: {
+                page: page,
+                limit: limit,
+                total: total,
+            },
+        },
+    });
 };
 exports.getAllUsers = getAllUsers;
 const createUser = async (req, res) => {
-    const { name, email } = req.body;
-    if (!name || !email) {
-        return res
-            .status(400)
-            .send({ success: false, message: "Name and email are required" });
+    const userData = { ...req.body };
+    if (req.file) {
+        console.time("Cloudinary Upload");
+        userData.profileImage = await (0, cloudinaryHelper_1.uploadToCloudinary)(req.file.path, "users");
+        console.timeEnd("Cloudinary Upload");
     }
-    try {
-        const user = await (0, userService_1.createUserService)(req.body);
-        res.send({ success: true, message: "User saved", data: user });
-    }
-    catch (error) {
-        console.log(error);
-        res.status(500).send({ success: false, message: "Error saving user" });
-    }
+    console.time("DB Create");
+    const user = await (0, userService_1.createUserService)(userData);
+    console.timeEnd("DB Create");
+    res.send({ success: true, message: "User saved", data: user });
 };
 exports.createUser = createUser;
-const updateUser = async (req, res) => {
-    const userId = req.params.id;
-    const updateUser = await User_1.default.findByIdAndUpdate(userId, req.body, {
-        new: true,
-    });
-    res.send(updateUser);
+const updateUser = async (req, res, next) => {
+    const id = req.body.id;
+    if (!id) {
+        return next(new apiError_1.default(400, "User ID is required"));
+    }
+    const userData = { ...req.body };
+    if (req.file) {
+        console.time("Cloudinary Update Upload");
+        userData.profileImage = await (0, cloudinaryHelper_1.uploadToCloudinary)(req.file.path, "users");
+        console.timeEnd("Cloudinary Update Upload");
+    }
+    console.time("DB Update");
+    const user = await (0, userService_1.updateUserService)(id, userData);
+    console.timeEnd("DB Update");
+    res.send({ success: true, message: "User updated", data: user });
 };
 exports.updateUser = updateUser;
 const deleteUser = async (req, res) => {
-    const userId = req.params.id;
-    const userToDelete = await User_1.default.findByIdAndDelete(userId);
-    res.send({ message: "User deleted", userToDelete });
+    const userId = req.body.id;
+    if (!userId) {
+        return res.status(400).json({
+            success: false,
+            message: "User ID is required",
+        });
+    }
+    const userToDelete = await (0, userService_1.deleteUserService)(userId);
+    if (userToDelete && userToDelete.profileImage) {
+        await (0, cloudinaryHelper_1.deleteFromCloudinary)(userToDelete.profileImage);
+    }
+    res.send({ success: true, message: "User deleted", data: userToDelete });
 };
 exports.deleteUser = deleteUser;
 //# sourceMappingURL=userController.js.map
