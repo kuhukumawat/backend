@@ -15,6 +15,15 @@ const userSchema = new mongoose.Schema({
   },
   age: Number,
   gender: String,
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
+  profileImage: {
+    type: String,
+    default: "",
+  },
 });
 
 const User = mongoose.model("User", userSchema);

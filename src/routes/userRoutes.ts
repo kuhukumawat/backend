@@ -5,22 +5,45 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController";
-import authMiddleware from "../middleware/auth";
+import authMiddleware, { authorize } from "../middleware/auth";
+import { validate } from "../middleware/validator";
+import { upload } from "../utils/uploads";
+import userSchema, { deleteUserSchema } from "../validators/userValidator";
+import { asyncHandler } from "../middleware/asyncHandler";
+
 const router = express.Router();
 
-// GET /users
-// router.get("/", (req, res) => {
-//   res.send("All users");
-// });
+router.post(
+  "/search",
+  authMiddleware,
+  authorize(["admin"]),
+  asyncHandler(getAllUsers),
+);
 
-// // POST /users
-// router.post("/", (req, res) => {
-//   res.send("User created");
-// });
+router.post(
+  "/create-user",
+  authMiddleware,
+  authorize(["admin"]),
+  upload.single("profileImage"),
+  validate(userSchema),
+  asyncHandler(createUser),
+);
 
-router.get("/", authMiddleware, getAllUsers);
-router.post("/", createUser);
-router.put("/:id", authMiddleware, updateUser);
-router.delete("/:id", authMiddleware, deleteUser);
+router.post(
+  "/update-user",
+  authMiddleware,
+  authorize(["admin"]),
+  upload.single("profileImage"),
+  validate(userSchema),
+  asyncHandler(updateUser),
+);
+
+router.delete(
+  "/delete-user",
+  authMiddleware,
+  authorize(["admin"]),
+  validate(deleteUserSchema),
+  asyncHandler(deleteUser),
+);
 
 export default router;

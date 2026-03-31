@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express, { Application } from "express";
 import connectDB from "./config/db";
 import logger from "./middleware/logger";
@@ -7,14 +9,36 @@ import auth from "./middleware/auth";
 import userRoutes from "./routes/userRoutes";
 import productRoutes from "./routes/productRoutes";
 import authRoute from "./routes/authRoutes";
-import dotenv from "dotenv";
-dotenv.config();
+import uploadRoute from "./routes/upload";
+import helmet from "helmet"; //development dependency
+import cors from "cors"; //production dependency
+import rateLimit from "express-rate-limit"; //production dependency
+import { errorHandler } from "./middleware/errorHandler";
 const app: Application = express(); //tell ts that this is an express app
 
-app.use(express.json());
 connectDB();
+// Middlewares (ORDER IMPORTANT)
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", // change in production
+  }),
+);
+
+app.use(express.json());
+
 app.use(logger);
-app.use("/users", auth);
+
+// Serve static files from the uploads directory
+app.use("/uploads", express.static("uploads"));
+
+// ✅ Rate limiter (CONFIGURED)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max requests per IP
+});
+app.use(limiter);
 //...............................get............................
 // app.get("/users", (req, res) => {
 //   const users = [
@@ -86,6 +110,10 @@ app.use("/users", auth);
 app.use("/users", userRoutes);
 app.use("/products", productRoutes);
 app.use("/auth", authRoute);
+app.use("/upload", uploadRoute);
+// Error handling middleware MUST be registered after all routes
+app.use(errorHandler);
+
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
 });

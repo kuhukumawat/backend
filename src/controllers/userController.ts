@@ -1,6 +1,12 @@
-import User from "../models/User";
-import { Request, Response } from "express";
-import { createUserService, getUsersService } from "../services/userService";
+import { NextFunction, Request, Response } from "express";
+import {
+  createUserService,
+  deleteUserService,
+  getUsersService,
+  updateUserService,
+} from "../services/userService";
+import ApiError from "../utils/apiError";
+import { uploadToCloudinary } from "../utils/cloudinaryHelper";
 // exports.getAllUsers = (req, res) => {
 //      const users = [
 //     { id: 1, name: "Komal" },
@@ -21,36 +27,67 @@ import { createUserService, getUsersService } from "../services/userService";
 //   });
 // };
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await getUsersService();
-  res.json({ success: true, data: { users: users } });
+  const { users, total, page, limit } = await getUsersService(req.body);
+
+  res.json({
+    success: true,
+    data: {
+      users: users,
+      pagination: {
+        page: page,
+        limit: limit,
+        total: total,
+      },
+    },
+  });
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  const { name, email } = req.body;
-  if (!name || !email) {
-    return res
-      .status(400)
-      .send({ success: false, message: "Name and email are required" });
+  const userData = { ...req.body };
+  if (req.file) {
+    console.time("Cloudinary Upload");
+    userData.profileImage = await uploadToCloudinary(req.file.path, "users");
+    console.timeEnd("Cloudinary Upload");
   }
-
-  try {
-    const user = await createUserService(req.body);
-    res.send({ success: true, message: "User saved", data: user });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ success: false, message: "Error saving user" });
-  }
+  console.time("DB Create");
+  const user = await createUserService(userData);
+  console.timeEnd("DB Create");
+  res.send({ success: true, message: "User saved", data: user });
 };
 
-export const updateUser = async (req: Request, res: Response) => {
-  const userId = req.params.id;
-  const updateUser = await User.findByIdAndUpdate(userId, req.body, {
-    new: true,
-  });
-  res.send(updateUser);
+export const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const id = req.body.id as string;
+
+  if (!id) {
+    return next(new ApiError(400, "User ID is required"));
+  }
+
+  const userData = { ...req.body };
+  if (req.file) {
+    console.time("Cloudinary Update Upload");
+    userData.profileImage = await uploadToCloudinary(req.file.path, "users");
+    console.timeEnd("Cloudinary Update Upload");
+  }
+
+  console.time("DB Update");
+  const user = await updateUserService(id, userData);
+  console.timeEnd("DB Update");
+  res.send({ success: true, message: "User updated", data: user });
 };
 export const deleteUser = async (req: Request, res: Response) => {
-  const userId = req.params.id;
-  const userToDelete = await User.findByIdAndDelete(userId);
-  res.send({ message: "User deleted", userToDelete });
+  const userId = req.body.id as string;
+
+  if (!userId) {
+    res.status(400).json({
+      success: false,
+      message: "User ID is required",
+    });
+  }
+
+  const userToDelete = await deleteUserService(userId);
+  res.send({ success: true, message: "User deleted", data: userToDelete });
 };
