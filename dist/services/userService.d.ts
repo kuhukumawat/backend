@@ -5,6 +5,10 @@ export interface UserData {
     age?: number;
     gender?: string;
     profileImage?: string;
+    otp: string;
+    otpExpiry: Date;
+    isVerified: boolean;
+    verificationToken?: string;
 }
 export declare const getUsersService: (query: {
     page?: string;
@@ -19,8 +23,12 @@ export declare const getUsersService: (query: {
         password: string;
         role: "user" | "admin";
         profileImage: string;
+        isVerified: boolean;
         age?: number | null;
         gender?: string | null;
+        verificationToken?: string | null;
+        otp?: string | null;
+        otpExpiry?: NativeDate | null;
     }, {
         id: string;
     }, import("mongoose").DefaultSchemaOptions> & Omit<{
@@ -29,8 +37,12 @@ export declare const getUsersService: (query: {
         password: string;
         role: "user" | "admin";
         profileImage: string;
+        isVerified: boolean;
         age?: number | null;
         gender?: string | null;
+        verificationToken?: string | null;
+        otp?: string | null;
+        otpExpiry?: NativeDate | null;
     } & {
         _id: import("mongoose").Types.ObjectId;
     } & {
@@ -48,8 +60,12 @@ export declare const createUserService: (data: UserData) => Promise<import("mong
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {
     id: string;
 }, import("mongoose").DefaultSchemaOptions> & Omit<{
@@ -58,8 +74,12 @@ export declare const createUserService: (data: UserData) => Promise<import("mong
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: import("mongoose").Types.ObjectId;
 } & {
@@ -73,8 +93,12 @@ export declare const updateUserService: (id: string, data: UserData) => Promise<
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {
     id: string;
 }, import("mongoose").DefaultSchemaOptions> & Omit<{
@@ -83,8 +107,12 @@ export declare const updateUserService: (id: string, data: UserData) => Promise<
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: import("mongoose").Types.ObjectId;
 } & {
@@ -98,8 +126,12 @@ export declare const deleteUserService: (id: string) => Promise<(import("mongoos
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {
     id: string;
 }, import("mongoose").DefaultSchemaOptions> & Omit<{
@@ -108,8 +140,12 @@ export declare const deleteUserService: (id: string) => Promise<(import("mongoos
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: import("mongoose").Types.ObjectId;
 } & {

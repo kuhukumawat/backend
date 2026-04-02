@@ -7,6 +7,10 @@ export interface UserData {
   age?: number;
   gender?: string;
   profileImage?: string;
+  otp: string;
+  otpExpiry: Date;
+  isVerified: boolean;
+  verificationToken?: string;
 }
 export const getUsersService = async (query: {
   page?: string;

@@ -9,4 +9,11 @@ export interface IUser {
   gender?: string;
   role: "user" | "admin";
   profileImage?: string;
+  otp: String;
+  otpExpiry: Date;
+  isVerified: {
+    type: Boolean;
+    default: false;
+  };
+  verificationToken?: string;
 }

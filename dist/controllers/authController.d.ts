@@ -3,4 +3,6 @@ export declare const registerUser: (req: Request, res: Response) => Promise<Resp
 export declare const loginUser: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export declare const forgortPassword: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 export declare const refreshTokenHandler: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const verifyMail: (req: Request, res: Response) => Promise<void>;
+export declare const resendCode: (req: Request, res: Response) => Promise<void>;
 //# sourceMappingURL=authController.d.ts.map

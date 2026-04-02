@@ -12,6 +12,8 @@ const router = express_1.default.Router();
 // Auth routes
 router.post("/register", (0, validator_1.validate)(authValidator_1.default), (0, asyncHandler_1.asyncHandler)(authController_1.registerUser));
 router.post("/login", (0, validator_1.validate)(authValidator_1.default), (0, asyncHandler_1.asyncHandler)(authController_1.loginUser));
+router.post("/verify-email", (0, asyncHandler_1.asyncHandler)(authController_1.verifyMail));
+router.post("/resend-code", (0, asyncHandler_1.asyncHandler)(authController_1.resendCode));
 router.post("/refresh-token", (0, asyncHandler_1.asyncHandler)(authController_1.refreshTokenHandler));
 router.post("/forgot-password", (0, validator_1.validate)(authValidator_1.default), (0, asyncHandler_1.asyncHandler)(authController_1.forgortPassword));
 exports.default = router;

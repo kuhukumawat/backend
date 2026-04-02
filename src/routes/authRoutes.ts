@@ -4,6 +4,8 @@ import {
   loginUser,
   forgortPassword,
   refreshTokenHandler,
+  verifyMail,
+  resendCode,
 } from "../controllers/authController";
 import { validate } from "../middleware/validator";
 import { asyncHandler } from "../middleware/asyncHandler";
@@ -14,6 +16,8 @@ const router = express.Router();
 // Auth routes
 router.post("/register", validate(authSchema), asyncHandler(registerUser));
 router.post("/login", validate(authSchema), asyncHandler(loginUser));
+router.post("/verify-email", asyncHandler(verifyMail));
+router.post("/resend-code", asyncHandler(resendCode));
 router.post("/refresh-token", asyncHandler(refreshTokenHandler));
 router.post(
   "/forgot-password",

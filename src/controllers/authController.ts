@@ -9,7 +9,44 @@ import ApiError from "../utils/apiError";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
+import { generateCode } from "../utils/generateCode";
+import { sendEmail } from "../utils/sendMail";
 dotenv.config();
+
+const getVerificationEmailTemplate = (verificationCode: string) => `
+  <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+    
+    <h2 style="color: #333;">Verify Your Email</h2>
+    
+    <p style="font-size: 16px; color: #555;">
+      Thank you for registering. Please use the verification code below:
+    </p>
+
+    <div style="
+      margin: 20px auto;
+      padding: 15px 25px;
+      background-color: #f4f4f4;
+      display: inline-block;
+      border-radius: 8px;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      color: #000;
+    ">
+      \${verificationCode}
+    </div>
+
+    <p style="font-size: 14px; color: #888;">
+      ⏳ This code will expire in <b>10 minutes</b>.
+    </p>
+
+    <p style="font-size: 14px; color: #888;">
+      If you did not request this, please ignore this email.
+    </p>
+
+  </div>
+`;
+
 export const registerUser = async (req: Request, res: Response) => {
   const { name, email, password, age, gender } = req.body;
 
@@ -25,11 +62,26 @@ export const registerUser = async (req: Request, res: Response) => {
     password,
     age,
     gender,
+    otp: "",
+    otpExpiry: new Date(),
+    isVerified: false,
+    verificationToken: "",
   });
+  const verificationCode = generateCode();
+  user.otp = verificationCode;
+  user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
 
+  await sendEmail(
+    user.email,
+    "Verify your email",
+    `Your verification code is ${verificationCode}`,
+    getVerificationEmailTemplate(verificationCode),
+  );
   res.status(201).json({
     success: true,
-    message: "User registered successfully",
+    message:
+      "User registered successfully please verify your email first for login",
     data: user,
   });
 };
@@ -43,6 +95,9 @@ export const loginUser = async (
     return next(new ApiError(400, "Email or Password is wrong"));
   }
   const user = await loginService({ email, password });
+  if (!user.user.isVerified) {
+    return next(new ApiError(400, "Please verify your email first"));
+  }
   res.send({
     success: true,
     message: "User logged in successfully",
@@ -76,15 +131,9 @@ export const refreshTokenHandler = async (
   if (!token) {
     return next(new ApiError(401, "Refresh token not found"));
   }
-  let decodedToken;
-  try {
-    decodedToken = jwt.verify(
-      token,
-      process.env.REFRESH_TOKEN_SECRET!,
-    ) as { userId: string };
-  } catch (err) {
-    return next(new ApiError(401, "Invalid or expired refresh token"));
-  }
+  const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!) as {
+    userId: string;
+  };
 
   const user = await User.findById(decodedToken.userId);
   if (!user) {
@@ -99,5 +148,62 @@ export const refreshTokenHandler = async (
       accessToken,
       refreshToken,
     },
+  });
+};
+export const verifyMail = async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(400, "User already verified");
+  }
+
+  if (!user.otp || user.otp.toUpperCase() !== otp.toUpperCase()) {
+    throw new ApiError(400, "Invalid code");
+  }
+
+  if (user.otpExpiry && user.otpExpiry < new Date()) {
+    throw new ApiError(400, "Code expired");
+  }
+
+  user.isVerified = true;
+  user.otp = "";
+  user.otpExpiry = new Date();
+
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Email verified successfully",
+  });
+};
+export const resendCode = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  if (user.isVerified) {
+    throw new ApiError(400, "User already verified");
+  }
+  const verificationCode = generateCode();
+  user.otp = verificationCode;
+  user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
+  const htmlTemplate = getVerificationEmailTemplate(verificationCode);
+  await sendEmail(
+    user.email,
+    "Verify your email",
+    `Your verification code is ${verificationCode}`,
+    htmlTemplate,
+  );
+  res.json({
+    success: true,
+    message: "Code resent successfully",
   });
 };

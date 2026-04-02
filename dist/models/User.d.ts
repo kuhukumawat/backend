@@ -5,8 +5,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {}, {}, {
     id: string;
 }, mongoose.Document<unknown, {}, {
@@ -15,8 +19,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {
     id: string;
 }, mongoose.DefaultSchemaOptions> & Omit<{
@@ -25,8 +33,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -39,16 +51,24 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, mongoose.Document<unknown, {}, {
     name: string;
     email: string;
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 }, {
     id: string;
 }, mongoose.DefaultSchemaOptions> & Omit<{
@@ -57,8 +77,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -71,8 +95,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -83,8 +111,12 @@ declare const User: mongoose.Model<{
     password: string;
     role: "user" | "admin";
     profileImage: string;
+    isVerified: boolean;
     age?: number | null;
     gender?: string | null;
+    verificationToken?: string | null;
+    otp?: string | null;
+    otpExpiry?: NativeDate | null;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {

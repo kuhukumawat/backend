@@ -3,7 +3,6 @@ import ApiError from "../utils/apiError";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import { createUserService, UserData } from "./userService";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 export const registerUserService = async (userData: UserData) => {
   const existingUser = await User.findOne({ email: userData.email });
   if (existingUser) {
@@ -13,6 +12,10 @@ export const registerUserService = async (userData: UserData) => {
   const user = await createUserService({
     ...userData,
     password: hashedPassword,
+    otp: "",
+    otpExpiry: new Date(),
+    isVerified: false,
+    verificationToken: "",
   });
   return user;
 };
